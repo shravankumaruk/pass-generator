@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🔐 Basic Password Generator</title>
+
+  <!-- Favicon (put your own favicon.ico/png in the same folder!) -->
+  <link rel="icon" href="favicon.ico" />
+
+  <!-- Font Awesome for “favicons” in the UI -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+  />
+
+  <style>
+    /* --- Base Reset --- */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #f0f4f8;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    /* --- Container --- */
+    .gen-container {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+      max-width: 400px;
+      width: 100%;
+      padding: 30px;
+      text-align: center;
+    }
+    .gen-container h1 {
+      margin-bottom: 20px;
+      font-size: 1.5rem;
+      color: #333;
+    }
+    .gen-container h1 .fa-key { color: #007bff; }
+
+    /* --- Controls --- */
+    .controls {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    .controls label {
+      display: flex;
+      align-items: center;
+      margin: 8px 0;
+      font-size: 0.95rem;
+      color: #555;
+    }
+    .controls label input[type="checkbox"] {
+      margin-right: 10px;
+      width: 16px; height: 16px;
+    }
+    .controls .length {
+      display: flex;
+      align-items: center;
+      margin: 12px 0;
+    }
+    .controls .length input[type="range"] {
+      flex: 1;
+      margin: 0 10px;
+    }
+    .controls .length span {
+      min-width: 32px;
+      text-align: right;
+      color: #333;
+      font-weight: bold;
+    }
+
+    /* --- Output & Buttons --- */
+    .output {
+      position: relative;
+      margin-bottom: 20px;
+    }
+    .output input {
+      width: 100%;
+      padding: 12px 40px 12px 12px;
+      font-size: 1rem;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      color: #333;
+    }
+    .output .copy-btn {
+      position: absolute;
+      right: 8px; top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.2rem;
+      color: #007bff;
+    }
+
+    .generate-btn {
+      background: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 12px 20px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    .generate-btn:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="gen-container">
+    <h1><i class="fas fa-key"></i> Password Generator</h1>
+
+    <div class="controls">
+      <div class="length">
+        <label for="length">Length:</label>
+        <input type="range" id="length" min="8" max="32" value="16" />
+        <span id="length-val">16</span>
+      </div>
+      <label><input type="checkbox" id="upper" checked /> Include Uppercase <i class="fas fa-font"></i></label>
+      <label><input type="checkbox" id="lower" checked /> Include Lowercase <i class="fas fa-font" style="transform: scale(0.9) rotate(180deg)"></i></label>
+      <label><input type="checkbox" id="numbers" checked /> Include Numbers <i class="fas fa-hashtag"></i></label>
+      <label><input type="checkbox" id="symbols" /> Include Symbols <i class="fas fa-asterisk"></i></label>
+    </div>
+
+    <div class="output">
+      <input type="text" id="password" readonly placeholder="Your secure password..." />
+      <button class="copy-btn" title="Copy to clipboard">
+        <i class="fas fa-copy"></i>
+      </button>
+    </div>
+
+    <button class="generate-btn" id="generate">
+      <i class="fas fa-sync-alt"></i> Generate
+    </button>
+  </div>
+
+  <script>
+    const lengthSlider = document.getElementById('length');
+    const lengthVal    = document.getElementById('length-val');
+    const pwdInput     = document.getElementById('password');
+    const copyBtn      = document.querySelector('.copy-btn');
+    const generateBtn  = document.getElementById('generate');
+
+    lengthSlider.addEventListener('input', () => {
+      lengthVal.textContent = lengthSlider.value;
+    });
+
+    function randomChar(str) {
+      return str[Math.floor(Math.random() * str.length)];
+    }
+
+    function generatePassword() {
+      const len    = +lengthSlider.value;
+      const upper  = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      const lower  = 'abcdefghijklmnopqrstuvwxyz';
+      const nums   = '0123456789';
+      const syms   = '!@#$%^&*()-_=+[]{};:<>/?,.';
+      let charset = '';
+      if (document.getElementById('upper').checked)   charset += upper;
+      if (document.getElementById('lower').checked)   charset += lower;
+      if (document.getElementById('numbers').checked) charset += nums;
+      if (document.getElementById('symbols').checked) charset += syms;
+
+      let pwd = '';
+      for (let i = 0; i < len; i++) {
+        pwd += randomChar(charset);
+      }
+      pwdInput.value = pwd;
+    }
+
+    generateBtn.addEventListener('click', generatePassword);
+
+    copyBtn.addEventListener('click', () => {
+      if (!pwdInput.value) return;
+      navigator.clipboard.writeText(pwdInput.value)
+        .then(() => { copyBtn.innerHTML = '<i class="fas fa-check"></i>'; setTimeout(() => {
+          copyBtn.innerHTML = '<i class="fas fa-copy"></i>';
+        }, 1500);
+        });
+    });
+
+    // Generate one immediately
+    generatePassword();
+  </script>
+</body>
+</html>
